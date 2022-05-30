@@ -9,11 +9,12 @@ class Database {
         if (Database.instance) { // проверяет существует ли данный класс для существования в одном экземпляре
             return Database.instance;
         }
+        const dbPass = fs.readFileSync("database-password.txt").toString().slice(0, 40);
         this.connection = mysql.createConnection({
             host: "localhost",
             user: "root",
-            database: "praktika",
-            password: "Qwerty12345!"
+            database: "diplom",
+            password: dbPass
         }).promise();
         this.openConnection();
         this.queue = [];
