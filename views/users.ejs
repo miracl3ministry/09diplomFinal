@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <title>✨ | HRM for ЗАО НИПО | 🖤</title>
+    <link rel='stylesheet' href='/stylesheets/style.css'/>
+    <link rel='stylesheet' href='/bootstrap/css/bootstrap.css'/>
+    <script src="/bootstrap/js/bootstrap.js"></script>
+</head>
+<body>
+<%- include('header', {login: login, links: links}); %>
+<div class="row">
+    <div class="col-12">
+        <h1>Пользователи</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin">Главная</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Пользователи</li>
+            </ol>
+        </nav>
+        <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal"
+                data-bs-target="#createUserModal" <%= (access & 64) ? '' : 'disabled' %>>
+            Создать пользователя
+        </button>
+        <table>
+            <thead>
+            <tr>
+                <td>Логин</td>
+            </tr>
+            </thead>
+            <tbody>
+            <% users.forEach((user) => { %>
+                <tr>
+                    <td><%= user.login %></td>
+                    <td>
+                        <button type="button" data-bs-toggle="modal" data-bs-target="#changePassModal" class="btn"
+                                data-id="<%= user.ID %>" <%= user.login === "admin" && login !== 'admin' ? 'disabled' : '' %> <%= (access & 64) ? '' : 'disabled' %>>Изменить
+                            пароль
+                        </button>
+                        <button type="button" data-bs-toggle="modal" data-bs-target="#deleteUserModal" class="btn"
+                                data-id="<%= user.ID %>" <%= user.login === "admin" ? 'disabled' : '' %> <%= (access & 64) ? '' : 'disabled' %>>
+                            Удалить
+                        </button>
+                        <button type="button" data-bs-toggle="modal" data-bs-target="#changeAccessModal" class="btn"
+                                data-id="<%= user.ID %>"
+                                data-access="<%= user.access %>" <%= user.login === "admin" ? 'disabled' : '' %> <%= (access & 64) ? '' : 'disabled' %>>
+                            Изменить доступы
+                        </button>
+                    </td>
+                </tr>
+            <% }); %>
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- Modal create new user -->
+<div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="users/create" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createUserModalLabel">Создать пользователя</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="login" class="col-form-label">Логин:</label>
+                        <input type="text" class="form-control" id="login" name="login" minlength="3" maxlength="40"
+                               required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="col-form-label">Пароль:</label>
+                        <input class="form-control" id="message-text" type="password" name="password" minlength="3"
+                               maxlength="40" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="submit" class="btn btn-primary">Создать</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Modal change pass -->
+<div class="modal fade" id="changePassModal" tabindex="-1" aria-labelledby="changePassModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="users/change-pass" method="post" id="changePasswordForm">
+                <input type="hidden" name="ID" id="newPassId">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="changePassModalLabel">Изменить пароль</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="login" class="col-form-label">Новый пароль:</label>
+                        <input type="password" class="form-control" id="newPass1" name="newPass1" minlength="3"
+                               maxlength="40" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="message-text" class="col-form-label">Повторите пароль:</label>
+                        <input type="password" class="form-control" id="newPass2" name="newPass2" minlength="3"
+                               maxlength="40" required>
+                    </div>
+                    <div class="alert alert-danger d-none" role="alert">
+                        Пароли не совпадают
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="submit" class="btn btn-primary">Изменить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Modal delete user -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="users/delete-user" method="post" id="deleteUserForm">
+                <input type="hidden" name="ID" id="deleteUserId">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteUserModalLabel">Вы действительно хотите удалить пользователя?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="submit" class="btn btn-primary">Удалить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Modal change access -->
+<div class="modal fade" id="changeAccessModal" tabindex="-1" aria-labelledby="changeAccessModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="users/change-access" method="post" id="changeAccessForm">
+                <input type="hidden" name="ID" id="changeAccessId">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="changeAccessModalLabel">Изменить доступы</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="7" id="access7" name="access7">
+                        <label class="form-check-label" for="access7">
+                            Чтение пользователей
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="6" id="access6" name="access6">
+                        <label class="form-check-label" for="access6">
+                            Изменение пользователей
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="5" id="access5" name="access5">
+                        <label class="form-check-label" for="access5">
+                            Чтение сотрудников
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="4" id="access4" name="access4">
+                        <label class="form-check-label" for="access4">
+                            Изменение сотрудников
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="3" id="access3" name="access3">
+                        <label class="form-check-label" for="access3">
+                            Чтение учета ТБ
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="2" id="access2" name="access2">
+                        <label class="form-check-label" for="access2">
+                            Запись в учет ТБ
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="1" id="access1" name="access1">
+                        <label class="form-check-label" for="access1">
+                            Доступ в настройки
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="0" id="access0" name="access0">
+                        <label class="form-check-label" for="access0">
+                            Доступ к логам
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="submit" class="btn btn-primary">Изменить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<%- include('toast') %>
+<script src="/javascripts/users.js"></script>
+</body>
+</html>

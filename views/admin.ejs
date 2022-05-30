@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>✨ | HRM for ЗАО НИПО | 🖤</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <link rel='stylesheet' href='/bootstrap/css/bootstrap.css' />
+    <script src="/bootstrap/js/bootstrap.js"></script>
+</head>
+<body>
+<%- include('header', {login: login, links: links}); %>
+<div class="row">
+    <div class="col-12">
+        <h3>Welcome to HRM</h3>
+        <% links.forEach((link) => { %>
+            <a href="admin/<%= link.href %>"><%= link.name %></a>
+            <br>
+        <% }); %>
+    </div>
+</div>
+<%- include('toast') %>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <title>✨ | HRM for ЗАО НИПО | 🖤</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <link rel='stylesheet' href='/bootstrap/css/bootstrap.css' />
+  </head>
+  <body>
+    <h3>Welcome to HRM</h3>
+  <form method="post" action="/login" class="form-check w-25">
+      <p class="form-label">Логин:</p>
+      <input type="text" name="login" class="form-control" minlength="3" maxlength="40" required>
+      <p class="form-label">Пароль:</p>
+      <input type="password" name="password" id="" class="form-control" minlength="3" maxlength="40" required><br>
+      <% if (error) { %>
+          <p class="form-label text-danger"><%= error %></p>
+      <% } %>
+      <button type="submit" class="btn btn-primary">Войти</button>
+  </form>
+  </body>
+</html>

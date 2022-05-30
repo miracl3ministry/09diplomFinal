@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>✨ | HRM for ЗАО НИПО | 🖤</title>
+    <link rel='stylesheet' href='/stylesheets/style.css'/>
+    <link rel='stylesheet' href='/bootstrap/css/bootstrap.css'/>
+    <script src="/bootstrap/js/bootstrap.js"></script>
+</head>
+<body>
+<%- include('header', {login: login, links: links}); %>
+<div class="row">
+    <div class="col-12">
+        <h1>Поиск "<%= searchValue %>"</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin">Главная</a></li>
+                <li class="breadcrumb-item"><a href="/admin/employees">Сотрудники</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Поиск</li>
+            </ol>
+        </nav>
+        <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal"
+                data-bs-target="#addNewEmployeeModal" <%= (access & 16) ? '' : 'disabled' %>>
+            Добавить сотрудника
+        </button>
+        <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal"
+                data-bs-target="#uploadXlsModal" <%= (access & 32) ? '' : 'disabled' %>>
+            Импорт из excel
+        </button>
+        <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal"
+                data-bs-target="#downloadXlsModal" <%= (access & 16) ? '' : 'disabled' %>>
+            Экспорт в excel
+        </button>
+        <div class="d-inline-block">
+            <form action="search" method="get">
+                <input type="search" placeholder="Поиск" name="s" maxlength="100">
+                <button type="submit" class="btn btn-primary">Поиск</button>
+            </form>
+        </div>
+
+        <table>
+            <thead>
+            <tr>
+                <th>ФИО</th>
+                <th>Подразделение</td>
+                <th>Должность</th>
+                <th>Дата приема</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <% employees.forEach((employee) => { %>
+                <tr>
+                    <td><%= employee.fio %></td>
+                    <td><%= employee.subdivision %></td>
+                    <td><%= employee.position %></td>
+                    <td><%= employee.dateOfHiring?.toLocaleDateString("ru") %></td>
+                    <td>
+                        <button type="button" data-bs-toggle="modal" data-bs-target="#updateEmployeeModal" class="btn"
+                                data-id="<%= employee.ID %>" <%= (access & 16) ? '' : 'disabled' %>
+                                data-fio="<%= employee.fio %>"
+                                data-subdivision="<%= employee.subdivision %>"
+                                data-position="<%= employee.position %>"
+                                data-dateofhiring="<%= employee.dateOfHiring %>"
+                        >
+                            Изменить данные
+                        </button>
+                        <button type="button" data-bs-toggle="modal" data-bs-target="#deleteEmployeeModal" class="btn"
+                                data-id="<%= employee.ID %>" <%= (access & 16) ? '' : 'disabled' %>>
+                            Удалить
+                        </button>
+                    </td>
+                </tr>
+            <% }); %>
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- Modal add new employee -->
+<div class="modal fade" id="addNewEmployeeModal" tabindex="-1" aria-labelledby="addNewEmployeeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="../employees/add" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addNewEmployeeModalLabel">Добавить работника</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="fio" class="col-form-label">ФИО:</label>
+                        <input type="text" class="form-control" id="fio" name="fio" minlength="3" maxlength="100"
+                               required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="subdivision" class="col-form-label">Подразделение:</label>
+                        <input class="form-control" id="subdivision" name="subdivision" list="subdivisionOptions" minlength="3" maxlength="100">
+                        <datalist id="subdivisionOptions">
+                            <% subdivisionDatalist.forEach((subdivision) => { %>
+                                <option><%= subdivision %></option>
+                            <% }); %>
+                        </datalist>
+                    </div>
+                    <div class="mb-3">
+                        <label for="position" class="col-form-label">Должность:</label>
+                        <input class="form-control" id="position" name="position" list="positionOptions"  minlength="3" maxlength="100">
+                        <datalist id="positionOptions">
+                            <% positionDatalist.forEach((position) => { %>
+                                <option><%= position %></option>
+                            <% }); %>
+                        </datalist>
+                    </div>
+                    <div class="mb-3">
+                        <label for="dateOfHiring" class="col-form-label">Дата найма:</label>
+                        <input class="form-control" type="date" id="dateOfHiring" name="dateOfHiring">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Modal update employee -->
+<div class="modal fade" id="updateEmployeeModal" tabindex="-1" aria-labelledby="updateEmployeeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="../employees/update" method="post">
+                <input type="hidden" name="ID" id="id-updateForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateEmployeeModalLabel">Изменить данные работника</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="fio-updateForm" class="col-form-label">ФИО:</label>
+                        <input type="text" class="form-control" id="fio-updateForm" name="fio" minlength="3" maxlength="100"
+                               required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="subdivision-updateForm" class="col-form-label">Подразделение:</label>
+                        <input class="form-control" id="subdivision-updateForm" list="subdivisionOptions-updateForm" name="subdivision" minlength="3" maxlength="100">
+                        <datalist id="subdivisionOptions-updateForm">
+                            <% subdivisionDatalist.forEach((subdivision) => { %>
+                                <option><%= subdivision %></option>
+                            <% }); %>
+                        </datalist>
+                    </div>
+                    <div class="mb-3">
+                        <label for="position-updateForm" class="col-form-label">Должность:</label>
+                        <input class="form-control" id="position-updateForm" list="positionOptions-updateForm" name="position" minlength="3" maxlength="100">
+                        <datalist id="positionOptions-updateForm">
+                            <% positionDatalist.forEach((position) => { %>
+                                <option><%= position %></option>
+                            <% }); %>
+                        </datalist>
+                    </div>
+                    <div class="mb-3">
+                        <label for="dateOfHiring-updateForm" class="col-form-label">Дата найма:</label>
+                        <input class="form-control" type="date" id="dateOfHiring-updateForm" name="dateOfHiring">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Modal delete employee -->
+<div class="modal fade" id="deleteEmployeeModal" tabindex="-1" aria-labelledby="deleteEmployeeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="../employees/delete" method="post" id="deleteEmployeeForm">
+                <input type="hidden" name="ID" id="id-deleteForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteEmployeeModalLabel">Вы действительно хотите удалить сотрудника?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="submit" class="btn btn-primary">Удалить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Modal upload xls -->
+<div class="modal fade" id="uploadXlsModal" tabindex="-1" aria-labelledby="uploadXlsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="../employees/upload-xls" method="post" id="uploadXlsForm" enctype="multipart/form-data" accept-charset="UTF-8">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadXlsModalLabel">Импорт из excel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="uploadXls" class="form-label">Выберете файл</label>
+                    <input class="form-control" type="file" name="file" id="uploadXls" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="submit" class="btn btn-primary">Загрузить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Modal download xls -->
+<div class="modal fade" id="downloadXlsModal" tabindex="-1" aria-labelledby="downloadXlsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="" method="post" id="downloadXlsForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="downloadXlsModalLabel">Экспорт в excel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <a href="../employees/download-xls">Создать файл и скачать</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<%- include('toast') %>
+<script src="/javascripts/employees.js"></script>
+</body>
+</html>

@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>✨ | HRM for ЗАО НИПО | 🖤</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <link rel='stylesheet' href='/bootstrap/css/bootstrap.css' />
+    <script src="/bootstrap/js/bootstrap.js"></script>
+</head>
+<body>
+<%- include('header', {login: login, links: links}); %>
+<div class="row">
+    <div class="col-12">
+        <div>
+            <h1>Поиск "<%= searchValue %>"</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/admin">Главная</a></li>
+                    <li class="breadcrumb-item"><a href="/admin/tb">Учет ТБ</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Поиск</li>
+                </ol>
+            </nav>
+            <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal"
+                    data-bs-target="#addCategoryModal" <%= (access & 4) ? '' : 'disabled' %>>
+                Добавить категорию
+            </button>
+            <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal"
+                    data-bs-target="#deleteCategoryModal" <%= (access & 4) ? '' : 'disabled' %>>
+                Удалить категорию
+            </button>
+            <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal"
+                    data-bs-target="#uploadXlsModal" <%= (access & 4) ? '' : 'disabled' %>>
+                Импорт из excel
+            </button>
+            <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal"
+                    data-bs-target="#downloadXlsModal" <%= (access & 8) ? '' : 'disabled' %>>
+                Экспорт в excel
+            </button>
+            <button type="button" class="btn btn-primary mb-2" id="checkTb" <%= (access & 8) ? '' : 'disabled' %>>
+                Проверить сроки
+            </button>
+            <div class="d-inline-block">
+                <form action="search" method="get">
+                    <input type="search" placeholder="Поиск" name="s" maxlength="100">
+                    <button type="submit" class="btn btn-primary">Поиск</button>
+                </form>
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <% categories.forEach((category) => { %>
+                    <td colspan="4"><%= category.name %></td>
+                    <% }); %>
+                    <td></td>
+                </tr>
+                <tr>
+                    <th>ФИО</th>
+                    <th>Должность</th>
+                    <th>Отдел</th>
+                    <% categories.forEach(() => { %>
+                        <td>Выдан</td>
+                        <td>Действует до</td>
+                        <td>Группа</td>
+                        <td>Скан</td>
+                    <% }); %>
+                    <td></td>
+                </tr>
+                </thead>
+                <tbody>
+                    <% let pos = 0; for (let i = 0; i < table.length; i++) { /* сборка сложной таблицы... */
+                        if (table[i].skip) { /* если прошлая строка пропускается, то продолжаем цикл с j-той категории (дописывает строку) */
+                            for (let j = pos; j < categories.length; j++) {
+                                if (categories[j].ID === table[i].category_id) /* выводим значения катерии и останавливаем цикл
+                                data-find= необходим для поиска значений */ {%>
+                                    <td data-find="<%= table[i].employee_id + "-" + table[i].category_id%>" data-name="issued" data-value="<%= table[i].issued %>">
+                                        <%= table[i].issued?.toLocaleDateString("ru") %></td>
+                                    <td data-find="<%= table[i].employee_id + "-" + table[i].category_id%>" data-name="validUntil" data-value="<%= table[i].validUntil %>">
+                                        <%= table[i].validUntil?.toLocaleDateString("ru") %></td>
+                                    <td data-find="<%= table[i].employee_id + "-" + table[i].category_id%>" data-name="group_name">
+                                        <%= table[i].group_name %></td>
+                                    <td data-find="<%= table[i].employee_id + "-" + table[i].category_id%>" data-name="scan">
+                                        <a href="<%= table[i].scan_href %>"><%= table[i].scan_name %></a></td>
+                                <% pos = j + 1;break;} else {  /* добавляем пуслтые td */ %>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                <% }
+                            }
+                            if (table[i].employee_id === table[i+1]?.employee_id) { /* если в след. строке этот же сотрудник */
+                                table[i+1].skip = true;
+                            } else { /* иначе выводим до конца строки пустые td (закрываем строку) */
+                                for (let j = pos; j < categories.length; j++) {%>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                <%} pos = 0; /* закрываем строку */%>
+                                    <td>
+                                        <button type="button" data-bs-toggle="modal" data-bs-target="#tbAddInRowModal" class="btn"
+                                                <%= (access & 4) ? '' : 'disabled' %>
+                                                data-id="<%= table[i]?.ID %>"
+                                                data-fio="<%= table[i]?.fio %>"
+                                                data-employeeId="<%= table[i]?.employee_id %>"
+                                        >
+                                            Добавить/изменить
+                                        </button>
+                                        <button type="button" data-bs-toggle="modal" data-bs-target="#tbDeleteFromRowModal" class="btn"
+                                                <%= (access & 4) ? '' : 'disabled' %>
+                                                data-id="<%= table[i]?.ID %>"
+                                                data-fio="<%= table[i]?.fio %>"
+                                                data-employeeId="<%= table[i]?.employee_id %>"
+                                        >
+                                            Удалить
+                                        </button>
+                                    </td>
+                                </tr>
+                            <%}
+                        } else { /* если начинается новая строка */ pos = 0;
+                            if (table[i].employee_id === table[i+1]?.employee_id) {
+                                table[i+1].skip = true;
+                            %>
+                            <tr>
+                                <th><%= table[i].fio %></th>
+                                <th><%= table[i].position %></th>
+                                <th><%= table[i].subdivision %></th>
+                                <% for (let j = 0; j < categories.length; j++) {
+                                    if (categories[j].ID === table[i].category_id) {%>
+                                        <td data-find="<%= table[i].employee_id + "-" + table[i].category_id%>" data-name="issued" data-value="<%= table[i].issued %>">
+                                                <%= table[i].issued?.toLocaleDateString("ru") %></td>
+                                        <td data-find="<%= table[i].employee_id + "-" + table[i].category_id%>" data-name="validUntil" data-value="<%= table[i].validUntil %>">
+                                                <%= table[i].validUntil?.toLocaleDateString("ru") %></td>
+                                        <td data-find="<%= table[i].employee_id + "-" + table[i].category_id%>" data-name="group_name">
+                                            <%= table[i].group_name %></td>
+                                        <td data-find="<%= table[i].employee_id + "-" + table[i].category_id%>" data-name="scan">
+                                            <a href="<%= table[i].scan_href %>"><%= table[i].scan_name %></a></td>
+                                    <% pos = j + 1; break;} else { %>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    <% }
+                                }
+                            } else { /* если у сотрудника одна запить по ТБ; */ %>
+                            <tr>
+                                <th><%= table[i].fio %></th>
+                                <th><%= table[i].position %></th>
+                                <th><%= table[i].subdivision %></th>
+                                <% categories.forEach((category) => {
+                                    if (category.ID === table[i].category_id) { %>
+                                        <td data-find="<%= table[i].employee_id + "-" + table[i].category_id%>" data-name="issued" data-value="<%= table[i].issued %>">
+                                                <%= table[i].issued?.toLocaleDateString("ru") %></td>
+                                        <td data-find="<%= table[i].employee_id + "-" + table[i].category_id%>" data-name="validUntil" data-value="<%= table[i].validUntil %>">
+                                                <%= table[i].validUntil?.toLocaleDateString("ru") %></td>
+                                        <td data-find="<%= table[i].employee_id + "-" + table[i].category_id%>" data-name="group_name">
+                                            <%= table[i].group_name %></td>
+                                        <td data-find="<%= table[i].employee_id + "-" + table[i].category_id%>" data-name="scan">
+                                            <a href="<%= table[i].scan_href %>"><%= table[i].scan_name %></a></td>
+                                    <% } else { %>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    <% }
+                                }) %>
+                            <td>
+                                <button type="button" data-bs-toggle="modal" data-bs-target="#tbAddInRowModal" class="btn"
+                                        <%= (access & 4) ? '' : 'disabled' %>
+                                        data-id="<%= table[i]?.ID %>"
+                                        data-fio="<%= table[i]?.fio %>"
+                                        data-employeeId="<%= table[i]?.employee_id %>"
+                                >
+                                    Добавить/изменить
+                                </button>
+                                <button type="button" data-bs-toggle="modal" data-bs-target="#tbDeleteFromRowModal" class="btn"
+                                        <%= (access & 4) ? '' : 'disabled' %>
+                                        data-id="<%= table[i]?.ID %>"
+                                        data-fio="<%= table[i]?.fio %>"
+                                        data-employeeId="<%= table[i]?.employee_id %>"
+                                >
+                                    Удалить
+                                </button>
+                            </td>
+                            </tr>
+                            <% }
+                        }
+                    } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!-- Modal add category -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="../tb/add-category" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCategoryModalLabel">Добавить категорию</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="categoryName" class="col-form-label">Название:</label>
+                        <input type="text" class="form-control"
+                               id="categoryName" name="categoryName" minlength="3" maxlength="100" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="categoryValidYears" class="col-form-label">Срок действия:</label>
+                        <input type="number" class="form-control" id="categoryValidYears" name="categoryValidYears" min="0" max="100">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Modal delete category -->
+<div class="modal fade" id="deleteCategoryModal" tabindex="-1" aria-labelledby="deleteCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="../tb/delete-category" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteCategoryModalLabel">Удалить категорию</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="categoryName_delete" class="col-form-label">Выберите категорию:</label>
+                        <select class="form-select" id="categoryName_delete" name="categoryName_delete" required>
+                            <% categories.forEach((category) => { %>
+                                <option value="<%= category.name %>"><%= category.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="submit" class="btn btn-primary">Удалить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Modal add tb row -->
+<div class="modal fade" id="tbAddInRowModal" tabindex="-1" aria-labelledby="tbAddInRowModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="../tb/add-in-row" method="post">
+                <input type="hidden" name="tbId_add" id="tbId_add">
+                <input type="hidden" name="employeeId_add" id="employeeId_add">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tbAddInRowModalLabel">Добавить сведения о проверках знаний требований ОТ</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <p class="col-form-label">Фио: <span id="tbAddInRow-fio"></span></p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tbCategory_add" class="col-form-label">Выберите категорию:</label>
+                        <select class="form-select" id="tbCategory_add" name="tbCategory_add" required>
+                            <option>Выберите категорию</option>
+                            <% categories.forEach((category) => { %>
+                                <option value="<%= category.name %>" data-category-id="<%= category.ID %>" data-validYears="<%= category.validYears %>"><%= category.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tbDateOfIssue_add" class="col-form-label">Дата выдачи:</label>
+                        <input type="date" class="form-control" id="tbDateOfIssue_add" name="tbDateOfIssue_add">
+                    </div>
+                    <div class="mb-3">
+                        <label for="tbValidUntil_add" class="col-form-label">Действителен до:</label>
+                        <input type="date" class="form-control" id="tbValidUntil_add" name="tbValidUntil_add" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tbGroup_add" class="col-form-label">Группа:</label>
+                        <input type="text" class="form-control" id="tbGroup_add" name="tbGroup_add" maxlength="100">
+                    </div>
+                    <div class="mb-3">
+                        <label for="tbScanName_add" class="col-form-label">Скан (отображаемое имя):</label>
+                        <input type="text" class="form-control" id="tbScanName_add" name="tbScanName_add" maxlength="100">
+                    </div>
+                    <div class="mb-3">
+                        <label for="tbScanHref_add" class="col-form-label">Скан (ссылка):</label>
+                        <input type="text" class="form-control" id="tbScanHref_add" name="tbScanHref_add" maxlength="100">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Modal delete tb row -->
+<div class="modal fade" id="tbDeleteFromRowModal" tabindex="-1" aria-labelledby="tbDeleteFromRowModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="../tb/delete-from-row" method="post">
+                <input type="hidden" name="tbEmployeeId_delete" id="tbEmployeeId_delete">
+                <input type="hidden" name="tbCategoryId_delete" id="tbCategoryId_delete">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tbDeleteFromRowModalLabel">Удалить сведения о проверке знаний требований ОТ</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <p class="col-form-label">Фио: <span id="tbDeleteFromRow-fio"></span></p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tbCategorySelect_delete" class="col-form-label">Выберите категорию:</label>
+                        <select class="form-select" id="tbCategorySelect_delete" name="tbCategorySelect_delete" required>
+                            <option>Выберите категорию</option>
+                            <% categories.forEach((category) => { %>
+                                <option value="<%= category.ID %>" data-category-id="<%= category.ID %>" disabled>
+                                    <%= category.name %>
+                                </option>
+                            <% }); %>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="submit" class="btn btn-primary">Удалить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<%- include('toast') %>
+<script src="/javascripts/tb.js"></script>
+</body>
+</html>

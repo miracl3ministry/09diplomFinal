@@ -1,0 +1,15 @@
+<header>
+    <div class="row">
+        <div class="col-2">
+            <p>HRM для ЗАО "НИПО"</p>
+        </div>
+        <div class="col-10">
+            <a href="/admin">Главная</a>
+            <% links.forEach((link) => { %>
+                <a href="/admin/<%= link.href %>"><%= link.name %></a>
+            <% }); %>
+            <span>Вы вошли как <%= login %></span>
+            <a href="/admin/logout">Выход из системы</a>
+        </div>
+    </div>
+</header>
