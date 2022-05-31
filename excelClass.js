@@ -58,8 +58,8 @@ class Csv {
         })
         categories.ids = [];
         for (let i = 0; i < categories.array.length; i++) {
-            // console.log('find index of', categories.array[i].trim().toLowerCase());
             let b = categoriesFromDbNames.indexOf(categories.array[i].trim().toLowerCase());
+            // console.log('find index for', categories.array[i].trim().toLowerCase(), '; founded:', categoriesFromDb[b]);
             categories.ids.push(categoriesFromDb[b].ID);
         }
 
@@ -141,7 +141,7 @@ class Csv {
             let b = categoriesFromDbArr.includes(categories[i].trim().toLowerCase());
             if (!b) added.push(categories[i]);
         }
-        await database.addRows('categories', 'name', [added]);
+        if (added.length !== 0) await database.addRows('categories', 'name', [added]);
         return added;
     }
 }

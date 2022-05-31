@@ -110,59 +110,61 @@ router.post('/upload-xls', (req, res) => {
     if (currentUserAccess & CAN_WRITE_TB) { // проверка доступа | CAN_WRITE_TB = 4
         const bb = busboy({headers: req.headers, defCharset: 'utf8'});
         bb.on('file', (name, file, info) => {
-            let fileName = 'upload-xlsx-' + randomFillSync(Buffer.alloc(5)).toString('hex') + '.xlsx';
-            let filePath = path.resolve(__dirname, '../user-upload/xlsx/', fileName);
-            file.pipe(fs.createWriteStream(filePath));
-            file.on('close', async () => {
-                console.log(`File ${fileName} done`);
-                // добавление сотрудников в бд
-                let employeesFromExcel = xlsx.parseXslForEmployeesTable(filePath);
-                let employeesFromDb = await employees.getEmployees();
-                let employeesFromDbArrayOfNames = [],
-                    employeesNotInDb = [];
-                employeesFromDb.forEach((employee) => {
-                    employeesFromDbArrayOfNames.push(employee.fio);
-                })
-                employeesFromExcel.forEach((employee) => {
-                    let i = employeesFromDbArrayOfNames.indexOf(employee[0]);
-                    if (i === -1) employeesNotInDb.push(employee);
-                })
-                if (employeesNotInDb.length !== 0) {// добавлем тех, кого нет в бд
-                    employees.addEmployees(employeesNotInDb);
-
-                    employeesFromDb = await employees.getEmployees();
-                    employeesFromDbArrayOfNames = [];
+            if (info.filename) {
+                let fileName = 'upload-xlsx-' + randomFillSync(Buffer.alloc(5)).toString('hex') + '.xlsx';
+                let filePath = path.resolve(__dirname, '../user-upload/xlsx/', fileName);
+                file.pipe(fs.createWriteStream(filePath));
+                file.on('close', async () => {
+                    console.log(`File ${fileName} done`);
+                    // добавление сотрудников в бд
+                    let employeesFromExcel = xlsx.parseXslForEmployeesTable(filePath);
+                    let employeesFromDb = await employees.getEmployees();
+                    let employeesFromDbArrayOfNames = [],
+                        employeesNotInDb = [];
                     employeesFromDb.forEach((employee) => {
                         employeesFromDbArrayOfNames.push(employee.fio);
                     })
                     employeesFromExcel.forEach((employee) => {
-                        let i = employeesFromDbArrayOfNames.indexOf(employee[0]); // employee[0] - fio
-                        console.log('id:', employeesFromDb[i].ID); // employeesFromDb[i].ID - id
+                        let i = employeesFromDbArrayOfNames.indexOf(employee[0]);
+                        if (i === -1) employeesNotInDb.push(employee);
                     })
-                }
+                    if (employeesNotInDb.length !== 0) {// добавлем тех, кого нет в бд
+                        employees.addEmployees(employeesNotInDb);
 
-                // ID, employee_id, category_id, issued, validUntil, group_name, scan_name, scan_href, validYears
-                let tbArr = []
-                let tbData = await xlsx.parseXslForTbTable(filePath);
-                tbData.forEach((row) => {
-                    let employeeId = employeesFromDb[employeesFromDbArrayOfNames.indexOf(row.fio)].ID;
-                    let categoryId = row.categoryId;
-                    let issued = row.issued ?? null;
-                    let validUntil = row.validUntil ?? null;
-                    let group = row.group ?? null;
-                    let scan = row.scan ?? null;
-                    let arr = [employeeId, categoryId, issued, validUntil, group, scan];
-                    tbArr.push(arr);
+                        employeesFromDb = await employees.getEmployees();
+                        employeesFromDbArrayOfNames = [];
+                        employeesFromDb.forEach((employee) => {
+                            employeesFromDbArrayOfNames.push(employee.fio);
+                        })
+                        employeesFromExcel.forEach((employee) => {
+                            let i = employeesFromDbArrayOfNames.indexOf(employee[0]); // employee[0] - fio
+                            // console.log('id:', employeesFromDb[i].ID); // employeesFromDb[i].ID - id
+                        })
+                    }
+
+                    // ID, employee_id, category_id, issued, validUntil, group_name, scan_name, scan_href, validYears
+                    let tbArr = []
+                    let tbData = await xlsx.parseXslForTbTable(filePath);
+                    tbData.forEach((row) => {
+                        let employeeId = employeesFromDb[employeesFromDbArrayOfNames.indexOf(row.fio)].ID;
+                        let categoryId = row.categoryId;
+                        let issued = row.issued ?? null;
+                        let validUntil = row.validUntil ?? null;
+                        let group = row.group ?? null;
+                        let scan = row.scan ?? null;
+                        let arr = [employeeId, categoryId, issued, validUntil, group, scan];
+                        tbArr.push(arr);
+                    })
+                    tb.addRows(tbArr);
+                    fs.unlink(filePath, () => res.redirect('/admin/tb'));
+                });
+                file.on('error', (e) => {
+                    console.error(e);
+                    writeLog(`POST /tb/upload-xls busboy error \nError: ${e};`,
+                        'logs/strange-errors.txt');
+                    res.send('Error');
                 })
-                tb.addRows(tbArr);
-                fs.unlink(filePath, () => res.redirect('/admin/tb'));
-            });
-            file.on('error', (e) => {
-                console.error(e);
-                writeLog(`POST /tb/upload-xls busboy error \nError: ${e};`,
-                    'logs/strange-errors.txt');
-                res.send('Error');
-            })
+            }
         });
         req.pipe(bb);
     } else res.sendStatus(403);

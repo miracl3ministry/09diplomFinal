@@ -24,8 +24,7 @@ router.get('/', async (req, res) => {
         let logs = [];
         if (req.query.clear) {
             let name = req.query.clear.slice(0, 100);
-            let files = ['logs/database-errors.txt', 'logs/errors.txt', 'logs/login.txt', 'logs/logs.txt', 'logs/strange-errors.txt', 'logs/users.txt']
-            console.log(req.query, name);
+            let files = ['logs/database-errors.txt', 'logs/server-errors.txt', 'logs/strange-errors.txt', 'logs/errors.txt', 'logs/login.txt', 'logs/logs.txt', 'logs/users.txt'];
             if (files.includes(name)){
                 try {
                     fs.writeFileSync(name, '');
@@ -39,10 +38,11 @@ router.get('/', async (req, res) => {
 
         try {
             logs.push(fs.readFileSync("logs/database-errors.txt"));
+            logs.push(fs.readFileSync("logs/strange-errors.txt"));
+            logs.push(fs.readFileSync("logs/server-errors.txt"));
             logs.push(fs.readFileSync("logs/errors.txt"));
             logs.push(fs.readFileSync("logs/login.txt"));
             logs.push(fs.readFileSync("logs/logs.txt"));
-            logs.push(fs.readFileSync("logs/strange-errors.txt"));
             logs.push(fs.readFileSync("logs/users.txt"));
         } catch (err) {
             console.error(err);

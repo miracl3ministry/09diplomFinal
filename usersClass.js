@@ -141,7 +141,7 @@ class Users {
             if (access & 128) links.push({href: 'users', name: 'Пользователи'})
             if (access & 32) links.push({href: 'employees', name: 'Сотрудники'})
             if (access & 8) links.push({href: 'tb', name: 'Учет ТБ'})
-            if (access & 2) links.push({href: 'settings', name: 'Настройки/календарь/сессии(фича не готова)'})
+            if (access & 2) links.push({href: 'settings', name: 'Тут будут файлы/настройки/календарь/сессии'})
             if (access & 1) links.push({href: 'logs', name: 'Логи'})
             return links;
         } else return [{href: 'error', name: 'error'}];

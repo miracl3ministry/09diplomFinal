@@ -9,7 +9,7 @@ class Database {
         if (Database.instance) { // проверяет существует ли данный класс для существования в одном экземпляре
             return Database.instance;
         }
-        const dbPass = fs.readFileSync("database-password.txt").toString().slice(0, 40);
+        const dbPass = fs.readFileSync("database-password.txt", 'utf-8');
         this.connection = mysql.createConnection({
             host: "localhost",
             user: "root",
