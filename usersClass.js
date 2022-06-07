@@ -12,21 +12,6 @@ class Users {
         Users.instance = this;
     }
 
-    async tests() { // функция для тестов и проверок
-        // let a = await this.addRow("users", "login, password, salt, UUID", ["testLogin", "test", "test", "uuid"]);
-        // console.log("a = ", a)
-        // let b = await this.readAll("users");
-        // console.log("b = ", b)
-        // let c = await this.checkExistence('testAdmin');
-        // console.log("c = ", c);
-        // await this.createUser("admin", "admin");
-        // let d = await this.checkPassword("testAdmin2", "123");
-        // console.log("d = ",d);
-        // let e = await this.compareUuid("02f2ec18-7a3a-41ef-8323-fb938e8da653");
-        // console.log("e =", e);
-        // this.deleteUser('testAdmin');
-    }
-
     async deleteUser(id) { // удаляет пользователя
         await database.delete("users", "ID=?", id);
     }
@@ -128,7 +113,9 @@ class Users {
     async firstLaunch() {// Проверка на первый запуск
         let adminIsExists = await this.getUserByLogin('admin');
         if (!adminIsExists[0]) {
-            this.createUser('admin', 'admin');
+            const pass = this.generatePassword();
+            this.createUser('admin', pass);
+            console.log("Готово! \nЛогин: admin\nПароль:", pass);
         }
     }
 
@@ -141,7 +128,7 @@ class Users {
             if (access & 128) links.push({href: 'users', name: 'Пользователи'})
             if (access & 32) links.push({href: 'employees', name: 'Сотрудники'})
             if (access & 8) links.push({href: 'tb', name: 'Учет ТБ'})
-            if (access & 2) links.push({href: 'settings', name: 'Тут будут файлы/настройки/календарь/сессии'})
+            if (access & 2) links.push({href: 'settings', name: ''}) // Тут будут файлы/настройки/календарь/сессии
             if (access & 1) links.push({href: 'logs', name: 'Логи'})
             return links;
         } else return [{href: 'error', name: 'error'}];
@@ -151,6 +138,21 @@ class Users {
         if (access < 256 && access >= 0) {
             await database.update('users', 'access=?', 'ID=?', [access, id]);
         } else return false;
+    }
+
+    generatePassword() {
+        function random(min, max) {
+            return Math.floor((max + 1 - min) * Math.random() + min);
+        }
+        let password = "";
+        const lettersEnglish = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        const numbers = "0123456789";
+        const passLength = random(14, 26);
+        const use = lettersEnglish + numbers;
+        for (let i = 0; i < passLength; i++) {
+            password += use[random(0, use.length - 1)];
+        }
+        return password;
     }
 }
 

@@ -60,7 +60,7 @@ class Csv {
         for (let i = 0; i < categories.array.length; i++) {
             let b = categoriesFromDbNames.indexOf(categories.array[i].trim().toLowerCase());
             // console.log('find index for', categories.array[i].trim().toLowerCase(), '; founded:', categoriesFromDb[b]);
-            categories.ids.push(categoriesFromDb[b].ID);
+            if (categoriesFromDb[b]?.ID) categories.ids.push(categoriesFromDb[b]?.ID);
         }
 
         // создаем массив значений для бд
@@ -139,9 +139,9 @@ class Csv {
         })
         for (let i = 0; i < categories.length; i++) {
             let b = categoriesFromDbArr.includes(categories[i].trim().toLowerCase());
-            if (!b) added.push(categories[i]);
+            if (!b) added.push([categories[i]]);
         }
-        if (added.length !== 0) await database.addRows('categories', 'name', [added]);
+        if (added.length !== 0) await database.addRows('categories', 'name', added);
         return added;
     }
 }

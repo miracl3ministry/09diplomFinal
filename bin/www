@@ -7,23 +7,46 @@ const fs = require("fs");
 const app = require('../app');
 const debug = require('debug')('09praktika:server');
 const https = require('https');
+const http = require('http');
 
+/**
+ * config
+ */
+const config = require('config');
+
+const keyPem = config.get("sslConfig.keyPath") ?? 'key.pem';
+const certPem = config.get("sslConfig.certPath") ?? 'cert.pem';
+const allowHttp = config.get("sslConfig.allowHttp") ?? false;
+const httpsPort = config.get("httpsPort") ?? 443;
+const httpPort = config.get("httpPort") ?? 80;
+
+/**
+ * Create HTTP server.
+ */
+if (allowHttp) {
+    const httpPortNormalize = normalizePort(httpPort || '80');
+    const httpServer = http.createServer(app);
+    httpServer.listen(httpPortNormalize);
+    httpServer.on('error', onError);
+    httpServer.on('listening', onListening);
+}
 /**
  * https
  */
+
 const options = {
-    key: fs.readFileSync('key.pem', 'utf-8'),
-    cert: fs.readFileSync('cert.pem', 'utf-8')
+    // key: fs.readFileSync(keyPem, 'utf-8'),
+    // cert: fs.readFileSync(certPem, 'utf-8')
 };
 
 /**
  * Get port from environment and store in Express.
  */
-const port = normalizePort(process.env.PORT || '443');
+const port = normalizePort(httpsPort || process.env.PORT || '443');
 app.set('port', port);
 
 /**
- * Create HTTP server.
+ * Create HTTPS server.
  */
 const server = https.createServer(options, app);
 

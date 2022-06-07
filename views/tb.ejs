@@ -75,7 +75,8 @@
                             for (let j = pos; j < categories.length; j++) {
                                 if (categories[j].ID === table[i].category_id) /* выводим значения катерии и останавливаем цикл
                                 data-find= необходим для поиска значений */ {%>
-                                    <td data-find="<%= table[i].employee_id + "-" + table[i].category_id%>" data-name="issued" data-value="<%= table[i].issued %>">
+                                    <td data-find="<%= table[i].employee_id + "-" + table[i].category_id%>" data-name="issued" data-value="<%= table[i].issued %>"
+                                        data-id="<%= table[i]?.ID %>">
                                         <%= table[i].issued?.toLocaleDateString("ru") %></td>
                                     <td data-find="<%= table[i].employee_id + "-" + table[i].category_id%>" data-name="validUntil" data-value="<%= table[i].validUntil %>">
                                         <%= table[i].validUntil?.toLocaleDateString("ru") %></td>
@@ -102,7 +103,6 @@
                                     <td>
                                         <button type="button" data-bs-toggle="modal" data-bs-target="#tbAddInRowModal" class="btn"
                                                 <%= (access & 4) ? '' : 'disabled' %>
-                                                data-id="<%= table[i]?.ID %>"
                                                 data-fio="<%= table[i]?.fio %>"
                                                 data-employeeId="<%= table[i]?.employee_id %>"
                                         >
@@ -129,7 +129,8 @@
                                 <th><%= table[i].subdivision %></th>
                                 <% for (let j = 0; j < categories.length; j++) {
                                     if (categories[j].ID === table[i].category_id) {%>
-                                        <td data-find="<%= table[i].employee_id + "-" + table[i].category_id%>" data-name="issued" data-value="<%= table[i].issued %>">
+                                        <td data-find="<%= table[i].employee_id + "-" + table[i].category_id%>" data-name="issued" data-value="<%= table[i].issued %>"
+                                            data-id="<%= table[i]?.ID %>">
                                                 <%= table[i].issued?.toLocaleDateString("ru") %></td>
                                         <td data-find="<%= table[i].employee_id + "-" + table[i].category_id%>" data-name="validUntil" data-value="<%= table[i].validUntil %>">
                                                 <%= table[i].validUntil?.toLocaleDateString("ru") %></td>
@@ -151,7 +152,8 @@
                                 <th><%= table[i].subdivision %></th>
                                 <% categories.forEach((category) => {
                                     if (category.ID === table[i].category_id) { %>
-                                        <td data-find="<%= table[i].employee_id + "-" + table[i].category_id%>" data-name="issued" data-value="<%= table[i].issued %>">
+                                        <td data-find="<%= table[i].employee_id + "-" + table[i].category_id%>" data-name="issued" data-value="<%= table[i].issued %>"
+                                            data-id="<%= table[i]?.ID %>">
                                                 <%= table[i].issued?.toLocaleDateString("ru") %></td>
                                         <td data-find="<%= table[i].employee_id + "-" + table[i].category_id%>" data-name="validUntil" data-value="<%= table[i].validUntil %>">
                                                 <%= table[i].validUntil?.toLocaleDateString("ru") %></td>
@@ -169,7 +171,6 @@
                             <td>
                                 <button type="button" data-bs-toggle="modal" data-bs-target="#tbAddInRowModal" class="btn"
                                         <%= (access & 4) ? '' : 'disabled' %>
-                                        data-id="<%= table[i]?.ID %>"
                                         data-fio="<%= table[i]?.fio %>"
                                         data-employeeId="<%= table[i]?.employee_id %>"
                                 >
@@ -177,7 +178,6 @@
                                 </button>
                                 <button type="button" data-bs-toggle="modal" data-bs-target="#tbDeleteFromRowModal" class="btn"
                                         <%= (access & 4) ? '' : 'disabled' %>
-                                        data-id="<%= table[i]?.ID %>"
                                         data-fio="<%= table[i]?.fio %>"
                                         data-employeeId="<%= table[i]?.employee_id %>"
                                 >

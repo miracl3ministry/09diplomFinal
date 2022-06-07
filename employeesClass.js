@@ -11,15 +11,8 @@ class Employees {
         Employees.instance = this;
     }
 
-    async tests() { // функция для тестов и проверок
-        console.log('start test');
-        // await this.createEmployee(['Зайцев Иван Иванович', 'Управление бухгалтерского учета', "Начальник управления", "2015-01-09", 1])
-        // let a = await this.getEmployees();
-        // this.deleteEmployee(4);
-    }
-
-    async addEmployee(arr) { // создает нового рабоника, принимает массив в формате [fio, subdivision, position, dateOfHiring, addedBy]
-        await database.addRow("employees", "fio, subdivision, position, dateOfHiring, addedBy", arr);
+    async addEmployee(arr) { // создает нового рабоника, принимает массив в формате [fio, subdivision, position, dateOfHiring]
+        await database.addRow("employees", "fio, subdivision, position, dateOfHiring", arr);
     }
 
     async addEmployees(arr) { // добавляет массив значений в бд в формате [fio, subdivision, position]
@@ -48,7 +41,7 @@ class Employees {
 
     async updateEmployee(id, arr) { // обновляет данные о сотруднике
         arr.push(id);
-        await database.update("employees", "fio=?, subdivision=?, position=?, dateOfHiring=?, addedBy=?", 'ID=?', arr);
+        await database.update("employees", "fio=?, subdivision=?, position=?, dateOfHiring=?", 'ID=?', arr);
     }
 }
 

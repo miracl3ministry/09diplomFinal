@@ -64,7 +64,7 @@ router.post('/add', async (req, res) => {
             const position = req.body.position.toString().slice(0, 100) ?? '';
             const dateOfHiring = req.body.dateOfHiring || null;
             let arr = [];
-            arr.push(fio, subdivision, position, dateOfHiring, currentUserId);
+            arr.push(fio, subdivision, position, dateOfHiring);
             await employees.addEmployee(arr);
             res.redirect('/admin/employees');
         } else res.send("Error");
@@ -79,7 +79,7 @@ router.post('/update', async (req, res) => {
             const position = req.body.position.toString().slice(0, 100) ?? '';
             const dateOfHiring = req.body.dateOfHiring || null;
             let arr = [];
-            arr.push(fio, subdivision, position, dateOfHiring, currentUserId);
+            arr.push(fio, subdivision, position, dateOfHiring);
             await employees.updateEmployee(req.body.ID, arr);
             res.redirect('/admin/employees');
         } else res.send("Error");

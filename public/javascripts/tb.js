@@ -3,7 +3,6 @@ let categoryId, employeeId, categoryValidYears;
 document.querySelectorAll('[data-bs-target="#tbAddInRowModal"]').forEach((button) => {
     button.addEventListener('click', () => {
         document.getElementById("tbAddInRow-fio").textContent = button.dataset.fio;
-        document.getElementById('tbId_add').value = button.dataset.id;
         document.getElementById('employeeId_add').value = button.dataset.employeeid;
         employeeId = button.dataset.employeeid;
         // let id = button.dataset.id;
@@ -30,6 +29,7 @@ document.getElementById('tbCategory_add').addEventListener('change', (category) 
     } else {
         let dateOfIssue = new Date(data[0].dataset.value).toISOString().slice(0,10);
         let validUntil = new Date(data[1].dataset.value).toISOString().slice(0,10);
+        document.getElementById('tbId_add').value = data[0].dataset.id;
         document.getElementById('tbDateOfIssue_add').value = dateOfIssue;
         document.getElementById('tbValidUntil_add').value = validUntil;
         document.getElementById('tbGroup_add').value = data[2].textContent.trim();

@@ -1,0 +1,16 @@
+{
+  "dbConfig": {
+    "host": "localhost",
+    "port": 3306,
+    "user": "root",
+    "database": "diplom",
+    "password": "dbPass"
+  },
+  "sslConfig": {
+    "keyPath": "cert/key.pem",
+    "certPath": "cert/cert.pem",
+    "allowHttp": true
+  },
+  "httpsPort": 3001,
+  "httpPort": 3000
+}

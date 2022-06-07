@@ -1,6 +1,9 @@
 const mysql = require("mysql2");
 const crypto = require("crypto");
 const fs = require("fs");
+const config = require('config');
+
+const dbConfig = config.get('dbConfig');
 
 class Database {
     static instance;
@@ -9,21 +12,10 @@ class Database {
         if (Database.instance) { // проверяет существует ли данный класс для существования в одном экземпляре
             return Database.instance;
         }
-        const dbPass = fs.readFileSync("database-password.txt", 'utf-8');
-        this.connection = mysql.createConnection({
-            host: "localhost",
-            user: "root",
-            database: "diplom",
-            password: dbPass
-        }).promise();
+        this.connection = mysql.createConnection(dbConfig).promise();
         this.openConnection();
         this.queue = [];
         Database.instance = this;
-    }
-
-    async tests() { // функция для тестирования: database.tests();
-        this.addRows("users", "login, password", [["test1", "test2"],["test3", "test4"],["test5", "test6"]]);
-        console.log(await this.readPage('users', 'ID', '', 0));
     }
 
     // DB CRUD
@@ -50,7 +42,7 @@ class Database {
         // Добавляет множество значений: this.addRows("users", "login, password", [["test1", "test2"],["test3", "test4"],["test5", "test6"]]);
         try {
             const sql = `INSERT INTO ${table}(${cols}) VALUES ?`;
-            await this.connection.query(sql, [values]);
+            await this.connection.query(sql, [values]); // на проде [values] 
         } catch (e) {
             console.error(`MySQL module error: ${e}`);
             this.writeLog(`MySQL module error: ${e}`);
